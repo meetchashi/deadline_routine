@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Deadline Board",
+  "version": "1.0.0",
+  "description": "Plan deadlines, track daily practice streaks, and book time in a daily schedule. Includes local Chrome reminders.",
+  "action": {
+    "default_title": "Open Deadline Board",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "storage",
+    "alarms",
+    "notifications"
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

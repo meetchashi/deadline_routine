@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deadline Board</title>
+<link rel="stylesheet" href="board.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Deadline Board</h1>
+      <p class="date" id="today"></p>
+    </div>
+    <div class="top-right">
+      <div class="summary" id="summary" aria-live="polite"></div>
+      <button type="button" class="add" id="open-add" aria-label="Add task">
+        <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 3.5v13M3.5 10h13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        <span>Add task</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="practice" aria-labelledby="h-practice">
+    <div class="practice-head">
+      <h2 id="h-practice">Practices</h2>
+      <button type="button" class="sbtn" id="toggle-streaks" aria-expanded="false" aria-controls="streak-panel">Streaks</button>
+      <span class="practice-n" id="practice-n"></span>
+      <span class="spacer"></span>
+      <button type="button" class="sbtn" id="open-routine">+ Add practice</button>
+    </div>
+    <div class="practice-list" id="practice-list"></div>
+    <section id="streak-panel" class="streak-panel" aria-labelledby="h-streaks" hidden>
+      <div class="col-head"><h2 id="h-streaks">Streaks</h2><button type="button" class="sbtn" id="close-streaks">Close</button></div>
+      <div class="side-list" id="side-list"></div>
+    </section>
+  </section>
+
+  <div class="note" id="sample-note" hidden>
+    <span>These are sample tasks so you can see how the board works.</span>
+    <button type="button" class="sbtn" id="remove-samples">Remove samples</button>
+  </div>
+
+  <div class="layout">
+    <main class="board" id="board">
+      <section class="col t-need" data-status="pending" aria-labelledby="h-pending">
+        <header class="col-head"><h2 id="h-pending">Pending</h2><span class="count" data-count="pending">0</span></header>
+        <div class="list" data-list="pending"></div>
+      </section>
+      <section class="col t-safe" data-status="progress" aria-labelledby="h-progress">
+        <header class="col-head"><h2 id="h-progress">In progress</h2><span class="count" data-count="progress">0</span></header>
+        <div class="list" data-list="progress"></div>
+      </section>
+      <section class="col t-done" data-status="done" aria-labelledby="h-done">
+        <header class="col-head"><h2 id="h-done">Completed</h2><span class="count" data-count="done">0</span></header>
+        <div class="list" data-list="done"></div>
+      </section>
+      <section class="col t-ice" data-status="icebox" aria-labelledby="h-icebox">
+        <header class="col-head"><h2 id="h-icebox">Icebox</h2><span class="count" data-count="icebox">0</span></header>
+        <div class="list" data-list="icebox"></div>
+      </section>
+    </main>
+
+    <aside class="side schedule" aria-labelledby="h-schedule">
+      <div class="col-head"><h2 id="h-schedule">Daily routine</h2><button type="button" class="sbtn" id="open-booking" disabled>+ Add</button></div>
+      <label class="field" for="schedule-date"><span>Schedule date</span><input id="schedule-date" type="date"></label>
+      <button type="button" class="sbtn" id="schedule-today">Today</button>
+      <p class="hint" id="schedule-summary" aria-live="polite">Loading your schedule.</p>
+      <div class="timeline-scroll"><div id="timeline" class="timeline" aria-label="Hourly schedule"></div></div>
+    </aside>
+  </div>
+
+  <p class="sync" id="sync" aria-live="polite">Loading your tasks.</p>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-title">
+    <h2 id="dlg-title">Add a task</h2>
+    <form class="form" id="task-form" novalidate>
+      <label class="field full" for="f-title"><span>Task</span>
+        <input id="f-title" type="text" placeholder="What needs to get done?" autocomplete="off" maxlength="140">
+      </label>
+      <label class="field" for="f-date"><span>Deadline date (required)</span>
+        <input id="f-date" type="date">
+      </label>
+      <label class="field" for="f-time"><span>Time <em>(optional)</em></span>
+        <input id="f-time" type="time">
+      </label>
+      <label class="field full" for="f-status"><span>Column</span>
+        <select id="f-status">
+          <option value="pending" selected>Pending</option>
+          <option value="progress">In progress</option>
+          <option value="done">Completed</option>
+          <option value="icebox">Icebox</option>
+        </select>
+      </label>
+      <div class="quick full" id="quick">
+        <span>Quick dates</span>
+        <button type="button" class="chipbtn" data-offset="0">Today</button>
+        <button type="button" class="chipbtn" data-offset="1">Tomorrow</button>
+        <button type="button" class="chipbtn" data-offset="3">In 3 days</button>
+        <button type="button" class="chipbtn" data-offset="7">In a week</button>
+        <button type="button" class="chipbtn" id="clear-time">Clear time</button>
+      </div>
+      <label class="field full" id="f-subs-wrap" for="f-subs"><span>Subtasks <em>(optional, one per line)</em></span>
+        <textarea id="f-subs" rows="3" placeholder="Gather requirements&#10;Draft pricing&#10;Review with team"></textarea>
+      </label>
+      <p class="msg full" id="form-msg" role="alert"></p>
+      <div class="actions">
+        <button type="submit" class="btn" id="f-submit">Add task</button>
+        <button type="button" class="btn ghost" id="f-cancel">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="overlay" id="r-overlay" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="r-dlg-title">
+    <h2 id="r-dlg-title">Add a daily practice</h2>
+    <form class="form" id="routine-form" novalidate>
+      <label class="field full" for="r-title"><span>Practice</span>
+        <input id="r-title" type="text" placeholder="Exercise 30 minutes, read 20 pages, ..." autocomplete="off" maxlength="80">
+      </label>
+      <label class="field" for="r-start"><span>Start date</span>
+        <input id="r-start" type="date">
+      </label>
+      <label class="field" for="r-end"><span>Repeat until <em>(blank = no end)</em></span>
+        <input id="r-end" type="date">
+      </label>
+      <p class="hint full">It shows up every day in this range. Miss 3 days in a row and you get an alert; miss 7 and it becomes an emergency.</p>
+      <p class="msg full" id="r-msg" role="alert"></p>
+      <div class="actions">
+        <button type="submit" class="btn" id="r-submit">Add practice</button>
+        <button type="button" class="btn ghost" id="r-cancel">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="overlay" id="booking-overlay" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="booking-heading">
+    <h2 id="booking-heading">Book time</h2>
+    <form class="form" id="booking-form" novalidate>
+      <label class="field full" for="booking-title"><span>Task or event</span><input id="booking-title" maxlength="140" autocomplete="off" placeholder="What are you planning?"></label>
+      <label class="field" for="booking-date"><span>Date</span><input id="booking-date" type="date" required></label>
+      <label class="field" for="booking-time"><span>Start time</span><input id="booking-time" type="time" required></label>
+      <label class="field" for="booking-hours"><span>Duration · hours</span><input id="booking-hours" type="number" min="0" max="24" step="1" value="1"></label>
+      <label class="field" for="booking-minutes"><span>Minutes</span><input id="booking-minutes" type="number" min="0" max="59" step="1" value="0"></label>
+      <p class="hint full" id="booking-preview" aria-live="polite"></p>
+      <label class="booking-done full"><input id="booking-done" type="checkbox"> Completed</label>
+      <p class="msg full" id="booking-msg" role="alert"></p>
+      <div class="actions booking-actions">
+        <button type="submit" class="btn">Save booking</button>
+        <button type="button" class="btn ghost" id="booking-cancel">Cancel</button>
+        <button type="button" class="btn ghost" id="booking-delete" hidden>Delete</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script src="logic.js"></script>
+<script src="board.js"></script>
+</body>
+</html>

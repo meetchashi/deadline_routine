@@ -1,0 +1,35 @@
+# Operating system and editor files
+.DS_Store
+._*
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Local secrets and environment configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Development dependencies, caches, and generated output
+node_modules/
+coverage/
+.playwright/
+playwright-report/
+test-results/
+*.log
+dist/
+build/
+*.zip
+*.crx
+*.crx3
+
+# Browser profiles and local data exports
+.chrome-profile/
+chrome-profile/
+user-data/
+exports/
