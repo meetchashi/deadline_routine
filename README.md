@@ -1,88 +1,248 @@
+<div align="center">
+
+<img src="icons/icon128.png" alt="Deadline Board icon" width="80" height="80">
+
 # Deadline Board
 
-A local-first Chrome extension for deadlines, daily practices, and time blocking. Keep tasks on a four-column board, track habit streaks, and plan your day with bookings that span their exact duration.
+### Your deadlines, habits, and daily plan — in one Chrome tab.
 
-Built with plain HTML, CSS, and JavaScript. No account, server, build step, or runtime dependencies.
+Organize tasks on a board, build daily practice streaks, and reserve time for focused work.
 
-## Features
+**🧩 Chrome extension · 🔒 Saved locally · ⚡ No account or setup tools needed**
 
-- **Task board:** Pending, In progress, Completed, and Icebox, with drag and drop, subtasks, and required deadlines.
-- **Urgency indicators:** Highlight overdue tasks and deadlines within three days; show an urgent-item count on the extension icon.
-- **Daily practices:** Check off repeating habits and view current streaks, personal bests, totals, and a 14-day history from the **Streaks** button beside **Practices**.
-- **Time blocking:** Book tasks or events with an exact start time and duration. For example, **11:25 AM + 1 hour 15 minutes blocks through 12:40 PM**.
-- **Current-hour schedule:** Today starts at the current hour and runs through 23:00. Other dates show the full day. Bookings can cross midnight; overlapping bookings are rejected.
-- **Booking controls:** Edit bookings, mark them completed, or delete them.
-- **Chrome notifications:** Get deadline reminders and alerts for missed practices.
-- **Adaptive layout:** Light and dark themes follow your system, with a responsive board layout.
+[Install in Chrome](#install-in-chrome) · [Create your first task](#create-your-first-task) · [Plan your day](#plan-your-day) · [Track habits](#track-habits)
 
-## Install locally
+</div>
 
-1. Download this repository using **Code → Download ZIP** and extract it, or clone it.
-2. Keep the folder somewhere permanent.
-3. Open `chrome://extensions` in desktop Chrome.
-4. Enable **Developer mode**.
-5. Click **Load unpacked** and select the folder containing `manifest.json`.
-6. Pin **Deadline Board** from Chrome's Extensions menu, then click its icon.
+---
 
-No package installation or compilation is needed. To update a local installation, replace the source files, reload the extension at `chrome://extensions`, and refresh the board tab. Avoid removing the extension when updating, because uninstalling can remove its saved data.
+| 📋 Organize your work | 🕒 Make time for it | 🔥 Build consistency |
+| --- | --- | --- |
+| Move tasks from **Pending** to **In progress** to **Completed**. Keep future ideas in **Icebox**. | Book an exact start time and duration in your daily schedule. | Check off daily practices and follow your progress with streaks. |
 
-## Use the board
+<a id="install-in-chrome"></a>
+## 🧩 Install in Chrome
 
-### Tasks
+**You need:** desktop Google Chrome and a downloaded copy of this project. No terminal commands or package installation are required.
 
-Click **Add task**, enter a title and deadline date, and optionally set a time and subtasks. A deadline without a time is treated as the end of that day.
+### 1. Download and unzip
 
-Move cards with drag and drop or their arrow buttons. The snowflake moves a task to Icebox. Cards also have edit, subtask, and delete controls; click the trash button twice to confirm deletion. Completing a task marks all its subtasks completed.
+At the top of this GitHub repository, click **Code → Download ZIP**. Extract the ZIP and move the extracted folder somewhere permanent, such as your Documents folder.
 
-The initial board contains demonstration tasks. Use **Remove samples** to clear them. Samples never trigger reminders or contribute to the toolbar badge.
+> [!TIP]
+> Open the extracted folder and look for **`manifest.json`**. This is the folder you will select in Chrome. Select the folder itself, rather than the ZIP or an individual file.
 
-### Practices and streaks
+### 2. Open Chrome's extensions page
 
-Click **+ Add practice**, choose a start date and an optional end date, then check off the practice each day. Click it again to undo today's completion.
+Copy this address, paste it into Chrome's address bar, and press **Enter**:
 
-Click **Streaks** beside **Practices** to see the history and edit or delete practices. Missing three consecutive days triggers an alert; missing seven triggers an emergency. Today is not counted as missed until the day is over.
+```text
+chrome://extensions
+```
 
-### Daily routine
+### 3. Enable Developer mode
 
-Click **+ Add** in the left column or click an hour in the timeline. Enter a task or event, date, start time, and duration between one minute and 24 hours.
+Turn on **Developer mode** in the upper-right corner of the extensions page.
 
-Click a booking to edit it, mark it completed, or delete it. Click **Delete** twice to confirm. Completed bookings still reserve their time. Choose another date to plan or review a full day, and click **Today** to return to the current hour.
+### 4. Load the extension
 
-The schedule refreshes every minute and when you return to the tab. Past hours are hidden for today, while an ongoing booking remains visible for its remaining time. Schedule bookings are separate from deadline-board tasks and do not send notifications.
+Click **Load unpacked**, select the extracted folder containing `manifest.json`, and confirm your selection.
 
-### Reminders
+**You should now see a Deadline Board card on the extensions page.** The board also opens in a new tab on first installation.
 
-- A daily digest of urgent tasks starts at **9:00 AM local time**.
-- Timed deadlines get a reminder within **60 minutes** before they are due.
-- Practices in alert or emergency receive a daily notification after the digest hour.
+### 5. Pin it for everyday use
 
-Chrome must be running, notifications must be allowed, and the computer must be awake for reminders to appear on time. These reminders are not an exact-time delivery guarantee. There are no email or SMS reminders.
+Click Chrome's **Extensions** button—the puzzle-piece icon in the toolbar—then click the **pin** beside **Deadline Board**.
 
-To customize reminder timing, edit `DIGEST_HOUR` and `LEAD_MINUTES` in [logic.js](logic.js). Practice thresholds are `PRACTICE_ALERT_DAYS` and `PRACTICE_EMERGENCY_DAYS` in the same file. Reload the extension after changes.
+Click the Deadline Board toolbar icon whenever you want to open your board. If its board tab is already open, the icon brings you back to it.
 
-## Privacy and permissions
+> [!NOTE]
+> This installation uses **Load unpacked**. A Chrome Web Store account is not needed. Keep the project folder in place so Chrome can continue loading its files.
 
-Data stays in the current Chrome profile using `chrome.storage.local`. The extension does not transmit your tasks, practices, or bookings to a server and includes no analytics or advertising. It does not sync between devices. See [PRIVACY.md](PRIVACY.md) for storage details and data removal.
+<a id="create-your-first-task"></a>
+## 📋 Create your first task
 
-| Permission | Purpose |
+Your first board includes example tasks. Click **Remove samples** if you want to start with an empty board.
+
+### 1. Click **Add task**
+
+Use the button at the top-right of the board.
+
+### 2. Fill in the task
+
+For example:
+
+| Field | Example | Required? |
+| --- | --- | --- |
+| **Task** | Prepare client proposal | Yes |
+| **Deadline date** | Choose tomorrow's date | Yes |
+| **Time** | 5:00 PM | Optional |
+| **Column** | Pending | Starts as Pending; you can choose another column |
+| **Subtasks** | Gather requirements<br>Draft proposal<br>Review and send | Optional; enter one per line |
+
+Use **Today**, **Tomorrow**, **In 3 days**, or **In a week** to set a date quickly. Without a time, the deadline is treated as the end of the selected day.
+
+### 3. Save it
+
+Click **Add task** at the bottom of the form. Your card appears in the column you chose and is saved automatically in this Chrome profile.
+
+### 4. Move it as you work
+
+**Pending → In progress → Completed**
+
+Drag the card into another column, or use its arrow buttons.
+
+| Column | Put these tasks here |
 | --- | --- |
-| `storage` | Save tasks, subtasks, practices, bookings, and reminder history locally. |
-| `alarms` | Periodically check for reminders and update the toolbar badge. |
+| **Pending** | Work you plan to start. |
+| **In progress** | Work you are doing now. |
+| **Completed** | Work you have finished. |
+| **Icebox** | Ideas or tasks you want to revisit later. |
+
+### Everyday task controls
+
+| What you want to do | How to do it |
+| --- | --- |
+| **Edit a task** | Click the pencil icon on its card. |
+| **Work through subtasks** | Expand the subtask section and update each subtask's status. |
+| **Finish a task** | Move it to Completed. Its subtasks are also marked completed. |
+| **Save something for later** | Click the snowflake icon to move it to Icebox. |
+| **Delete a task** | Click the trash icon, then click it again to confirm. |
+
+> [!TIP]
+> **Look for the red edge.** An **EMERGENCY** tag means a task is overdue or due within three days. The red number on the toolbar icon counts urgent tasks and practices in emergency. Example tasks do not trigger notifications or contribute to that number.
+
+<a id="plan-your-day"></a>
+## 🕒 Plan your day
+
+Use **Daily routine** in the left column to reserve time for a task or event.
+
+1. Click **+ Add** or click an hour in the timeline.
+2. Enter a name, date, and exact **start time**.
+3. Set the duration in **hours** and **minutes**.
+4. Click **Save booking**. The timeline blocks the full duration.
+
+> **Example:** “Work on proposal” starting at **11:25 AM** for **1 hour 15 minutes** reserves **11:25 AM–12:40 PM**.
+
+| Schedule behavior | What to expect |
+| --- | --- |
+| **Today** | The current hour stays first, followed by the remaining hours through 23:00. |
+| **Another date** | Choose a schedule date to see its full 24-hour timeline. Click **Today** to return. |
+| **Overlapping times** | A new booking is rejected if it overlaps an existing one. |
+| **Across midnight** | A booking continues into the next date. |
+| **Changes** | Click a booking to edit it, mark it completed, or delete it. Click Delete twice to confirm. |
+
+The schedule refreshes every minute and when you return to the tab. Past hours are hidden for today; an ongoing booking stays visible for its remaining time. Completed bookings still reserve their time.
+
+> [!NOTE]
+> **Board tasks and schedule bookings are separate.** Adding a task to the board does not automatically book time. Schedule bookings do not send reminder notifications.
+
+<a id="track-habits"></a>
+## 🔥 Track habits with daily practices
+
+1. Click **+ Add practice** beside the Practices heading.
+2. Enter a habit, such as **Read 20 pages**, and choose a start date. Set an end date if you want one.
+3. Click the practice each day to mark it done. Click again to undo today's check.
+4. Click **Streaks** beside **Practices** to see your current streak, best streak, total completed days, and the last 14 days. Edit and delete controls are there too.
+
+| Missed days in a row | Status |
+| --- | --- |
+| **3 days** | 🟠 Alert |
+| **7 days** | 🔴 Emergency |
+
+Today counts as missed only after the day is over. Practices return unchecked the next day within their scheduled date range.
+
+## 🔔 Get deadline reminders
+
+| Reminder | Default timing |
+| --- | --- |
+| **Urgent-task digest** | Daily, starting at **9:00 AM local time**. |
+| **Timed task deadline** | Within **60 minutes before** the deadline. |
+| **Practice alert or emergency** | Once daily after the digest hour. |
+
+Chrome must be running, notifications must be allowed, and your computer must be awake for reminders to appear on time. Delivery is not guaranteed at an exact time. Email and SMS reminders are not included.
+
+<details>
+<summary><strong>Customize reminder times and practice thresholds</strong></summary>
+
+Edit these values in [logic.js](logic.js), then reload the extension:
+
+| Setting | Purpose |
+| --- | --- |
+| `DIGEST_HOUR` | Local hour for the morning digest. |
+| `LEAD_MINUTES` | How far ahead of a timed deadline to remind you. |
+| `PRACTICE_ALERT_DAYS` | Missed days before a practice alert. |
+| `PRACTICE_EMERGENCY_DAYS` | Missed days before a practice emergency. |
+
+</details>
+
+## 💬 Help and common questions
+
+<details>
+<summary><strong>Chrome says the manifest is missing. Which folder should I choose?</strong></summary>
+
+Extract the downloaded ZIP first. In **Load unpacked**, select the folder that directly contains `manifest.json`, `board.html`, and `background.js`. If the extracted download has another folder inside it, open that inner folder and check for these files.
+
+</details>
+
+<details>
+<summary><strong>How do I update the extension?</strong></summary>
+
+Replace the source files in the installed project folder, open `chrome://extensions`, click the reload button on the Deadline Board card, and refresh the board tab.
+
+Avoid uninstalling the extension to update it, because uninstalling can remove its saved data.
+
+</details>
+
+<details>
+<summary><strong>Where are my tasks saved? Will they sync to my phone?</strong></summary>
+
+Tasks, practices, and bookings stay in the current Chrome profile. They do not sync between devices, and there is no built-in export or restore feature. Desktop Chrome is required for installation; Chrome on phones does not run this extension.
+
+</details>
+
+<details>
+<summary><strong>Why am I not receiving notifications?</strong></summary>
+
+Check that Chrome is running and that both Chrome and your operating system allow notifications. Your computer must be awake. Board tasks need a deadline time for the advance reminder; daily schedule bookings do not send reminders, and sample tasks never notify you.
+
+</details>
+
+## 🔒 Privacy
+
+Your tasks, practices, and bookings are saved locally with `chrome.storage.local`. The extension includes no analytics or advertising and does not send your data to a server. Notification previews may show task or practice titles.
+
+| Permission | Why it is needed |
+| --- | --- |
+| `storage` | Save your tasks, subtasks, practices, bookings, and reminder history. |
+| `alarms` | Check for reminders and update the toolbar badge. |
 | `notifications` | Display deadline and practice reminders. |
 
-No host permissions are requested. The layout supports narrow windows, but installation is intended for desktop Chrome; Chrome on phones does not run this extension.
+No host permissions are requested. Read [PRIVACY.md](PRIVACY.md) for storage details and data removal.
 
-## Development
+## 🛠️ For developers
 
-Edit the source files directly, reload the extension, and refresh the board tab. For UI-only previews, open `board.html` in a browser; this uses separate `localStorage` data and does not run Chrome notifications or the background worker.
+Built with plain HTML, CSS, and JavaScript, with no build step or runtime dependencies.
 
-Run the repository checks with Node.js 22 or newer:
+<details>
+<summary><strong>Local development and checks</strong></summary>
+
+Edit the source files directly, reload the extension at `chrome://extensions`, and refresh the board tab.
+
+For UI-only previews, open `board.html` in a browser. This uses separate `localStorage` data and does not run Chrome notifications or the background worker.
+
+Run repository checks with **Node.js 22 or newer**:
 
 ```sh
 node scripts/check.mjs
 ```
 
-The checks validate JavaScript syntax, the manifest, and referenced local assets. GitHub Actions runs the same checks on pushes and pull requests. Browser behavior should also be checked manually; see [CONTRIBUTING.md](CONTRIBUTING.md).
+These checks validate JavaScript syntax, the manifest, and referenced local assets. GitHub Actions runs the same checks on pushes and pull requests. Browser behavior should also be checked manually; see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+</details>
+
+<details>
+<summary><strong>Project structure</strong></summary>
 
 | File | Responsibility |
 | --- | --- |
@@ -94,16 +254,19 @@ The checks validate JavaScript syntax, the manifest, and referenced local assets
 | `manifest.json` | Chrome extension metadata and permissions. |
 | `icons/` | Extension icons. |
 
-## Publishing the repository
+</details>
 
-This project can be hosted as a public source repository without deploying a website or backend. After creating an empty repository on GitHub, commit the project and add that repository as the `origin` remote, then push the `main` branch. Do not initialize the remote with a second README or license.
+<details>
+<summary><strong>Publish the source on GitHub</strong></summary>
 
-Publishing the source on GitHub does not publish the extension to the Chrome Web Store. Users can install it using **Load unpacked** as described above.
+Create an empty repository on GitHub, commit this project, add the repository as the `origin` remote, and push the `main` branch. Do not initialize the remote with a second README or license.
 
-## Contributing
+Publishing the source does not publish the extension to the Chrome Web Store. Users can install it using the **Load unpacked** instructions above.
 
-Bug reports, suggestions, and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for development and verification guidance. Keep personal task data and browser profiles out of reports and commits.
+</details>
 
-## License
+---
 
-[MIT](LICENSE) © 2026 Deadline Board contributors. Commercial use is permitted under the MIT license; no royalty or payment to the author is required.
+**Contribute:** Bug reports, suggestions, and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md), and keep personal task data out of reports and commits.
+
+**License:** [MIT](LICENSE) © 2026 Deadline Board contributors. Commercial use is permitted; no royalty or payment to the author is required.
