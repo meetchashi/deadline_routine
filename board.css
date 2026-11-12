@@ -116,10 +116,13 @@ h1 { font-family: var(--font-display); font-weight: 700; font-size: 30px; line-h
 .sbtn:hover { background: var(--surface-2); }
 
 .subtoggle { display: flex; align-items: center; gap: 6px; width: 100%; height: 16px; padding: 0 2px; border: 0; background: transparent; color: var(--muted); font-size: 10.5px; cursor: pointer; text-align: left; }
-.subtoggle .caret { width: 8px; flex: 0 0 auto; }
-.subtoggle .bar { flex: 1 1 auto; min-width: 20px; height: 4px; border-radius: 2px; background: var(--surface-2); overflow: hidden; }
-.subtoggle .bar i { display: block; height: 100%; background: var(--tone); }
-.subtoggle .n { font-family: var(--font-mono); flex: 0 0 auto; }
+.task-progress { display: flex; flex-direction: column; gap: 4px; padding: 4px 0; }
+.progress-caption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 6px; font-size: 10.5px; color: var(--muted); }
+.progress-value { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.progress-track { height: 6px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.progress-track i { display: block; height: 100%; background: var(--done); }
+.time-left .progress-track i { background: var(--accent); }
+.subtask-count-fields { display: flex; flex-wrap: wrap; gap: 12px; }
 .subs { display: flex; flex-direction: column; gap: 4px; padding: 5px; border-radius: 6px; background: var(--bg); }
 .sub { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding-bottom: 4px; border-bottom: 1px solid var(--line); font-size: 12px; }
 .sub-title { flex: 1 1 90px; min-width: 0; overflow-wrap: anywhere; font-weight: 500; }

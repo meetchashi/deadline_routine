@@ -103,7 +103,22 @@
         <button type="button" class="chipbtn" data-offset="7">In a week</button>
         <button type="button" class="chipbtn" id="clear-time">Clear time</button>
       </div>
-      <label class="field full" id="f-subs-wrap" for="f-subs"><span>Subtasks <em>(optional, one per line)</em></span>
+      <label class="field full" for="f-subtask-mode"><span>Subtask tracking</span>
+        <select id="f-subtask-mode">
+          <option value="count">Number of subtasks</option>
+          <option value="list">Named subtasks</option>
+        </select>
+      </label>
+      <div class="subtask-count-fields full" id="f-counts-wrap">
+        <label class="field" for="f-subtask-total"><span>Total subtasks</span>
+          <input id="f-subtask-total" type="number" min="1" step="1" value="1">
+        </label>
+        <label class="field" for="f-subtask-completed"><span>Completed subtasks</span>
+          <input id="f-subtask-completed" type="number" min="0" step="1" value="0">
+        </label>
+      </div>
+      <p class="hint full" id="f-subs-hint" hidden>Edit existing named subtasks on the task card. Switching tracking modes keeps your saved checklist and counts.</p>
+      <label class="field full" id="f-subs-wrap" hidden for="f-subs"><span>Subtasks <em>(optional, one per line)</em></span>
         <textarea id="f-subs" rows="3" placeholder="Gather requirements&#10;Draft pricing&#10;Review with team"></textarea>
       </label>
       <p class="msg full" id="form-msg" role="alert"></p>

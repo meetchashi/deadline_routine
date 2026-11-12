@@ -99,6 +99,17 @@ Drag the card into another column, or use its arrow buttons.
 | **Completed** | Work you have finished. |
 | **Icebox** | Ideas or tasks you want to revisit later. |
 
+### Subtasks and progress bars
+
+Choose **Number of subtasks** to track a count without naming each item. New tasks start at **0 completed / 1 total**. Set any positive whole-number total (for example, 75), then update the completed count using the pencil button or **Update subtask counts**. Completing 25 of 75 shows **33.3%**. Reaching the total adds a check mark and moves the task to Completed; increasing the total reopens it.
+
+Choose **Named subtasks** for a checklist. Enter one per line when creating a task, then expand the card to add, remove, or update individual subtasks. Existing checklists remain available when switching tracking modes. Reopening a completed task resets its active subtask progress.
+
+Every card shows two bars:
+
+- **Completion:** completed subtasks divided by total subtasks.
+- **Time left:** hours remaining, as a percentage of the interval from the task's original creation time to its deadline. Created at 9 PM and due at 11 PM means 100% initially and 50% (1 hour) at 10 PM. The bar refreshes every minute and reaches zero at the deadline. Editing a deadline keeps the original creation time. Without a deadline time, the existing 11:59 PM default applies. Older tasks without a creation timestamp show “Creation time unavailable.”
+
 ### Everyday task controls
 
 | What you want to do | How to do it |

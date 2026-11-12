@@ -39,6 +39,46 @@ function rel(t) {
   if (n === 1) return 'Tomorrow';
   return 'in ' + n + ' days';
 }
+// Counts are an alternative to a named checklist, which is kept when switching modes.
+function taskProgress(t) {
+  var total, completed;
+  if (t.subtaskMode === 'count') {
+    total = Number.isSafeInteger(t.subtaskTotal) && t.subtaskTotal > 0 ? t.subtaskTotal : 1;
+    completed = Number.isSafeInteger(t.subtaskCompleted) ? Math.max(0, Math.min(total, t.subtaskCompleted)) : 0;
+  } else {
+    total = (t.subs || []).length || 1;
+    completed = (t.subs || []).length
+      ? t.subs.filter(function (s) { return s.status === 'done'; }).length
+      : t.status === 'done' ? 1 : 0;
+  }
+  return { total: total, completed: completed, percent: completed / total * 100 };
+}
+function taskTimeRemaining(t, now) {
+  var end = dueDate(t).getTime(), start = t.created;
+  var remaining = Math.max(0, end - (now || new Date()).getTime());
+  var duration = end - start;
+  return {
+    hours: remaining / 36e5,
+    percent: Number.isFinite(start) && duration > 0 ? Math.max(0, Math.min(100, remaining / duration * 100)) : 0,
+    hasStart: Number.isFinite(start)
+  };
+}
+function syncFromCount(t) {
+  var p = taskProgress(t);
+  if (p.completed === p.total) t.status = 'done';
+  else if (p.completed > 0 || t.status === 'done') t.status = 'progress';
+}
+// Keep explicit moves to Completed and reopening consistent with both progress modes.
+function setTaskStatus(t, status) {
+  t.status = status;
+  if (status === 'done') {
+    if (t.subtaskMode === 'count') t.subtaskCompleted = taskProgress(t).total;
+    else (t.subs || []).forEach(function (s) { s.status = 'done'; });
+  } else if (taskProgress(t).percent === 100) {
+    if (t.subtaskMode === 'count') t.subtaskCompleted = 0;
+    else (t.subs || []).forEach(function (s) { s.status = 'pending'; });
+  }
+}
 // Keeps a task's column in step with its subtasks (each is pending, progress or done).
 function syncFromSubs(t) {
   var n = t.subs.length;

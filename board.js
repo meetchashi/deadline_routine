@@ -54,6 +54,7 @@
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
   // Older saved subtasks used a done flag; every subtask now carries a status.
   function normSubs(t) {
+    if (!t.subtaskMode) t.subtaskMode = 'list';
     if (!Array.isArray(t.subs)) t.subs = [];
     t.subs.forEach(function (s) { if (!s.status) s.status = s.done ? 'done' : 'pending'; });
     return t;
@@ -136,8 +137,7 @@
     var src = findTask(id);
     if (!src || src.status === status) return;
     var t = clone(src);
-    t.status = status;
-    if (status === 'done') t.subs.forEach(function (s) { s.status = 'done'; });
+    setTaskStatus(t, status);
     commit(t);
   }
   function setSubStatus(id, sid, status) {
@@ -182,6 +182,35 @@
     }
   }
 
+  function formatPercent(n) { return String(Math.round(n * 10) / 10); }
+  function progressRow(label, text, percent, cls) {
+    var fill = h('i');
+    fill.style.width = percent + '%';
+    return h('div', { class: 'task-progress ' + cls },
+      h('div', { class: 'progress-caption' }, h('span', { text: label }), h('span', { class: 'progress-value', text: text })),
+      h('div', { class: 'progress-track', role: 'progressbar', 'aria-label': label, 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': String(percent), 'aria-valuetext': text }, fill));
+  }
+  function updateTimeRow(row, t, now) {
+    var time = taskTimeRemaining(t, now);
+    var text = !time.hasStart ? 'Creation time unavailable' :
+      time.hours === 0 ? '0h · Deadline passed' :
+      time.hours.toFixed(2) + 'h · ' + formatPercent(time.percent) + '%';
+    row.querySelector('.progress-value').textContent = text;
+    var track = row.querySelector('.progress-track');
+    track.setAttribute('aria-valuenow', String(time.percent));
+    track.setAttribute('aria-valuetext', text);
+    track.firstChild.style.width = time.percent + '%';
+  }
+  function refreshBoard() {
+    // Refresh the clock without destroying a subtask draft or its keyboard focus.
+    if ($('#board').contains(document.activeElement)) {
+      document.querySelectorAll('[data-task-time]').forEach(function (row) {
+        var t = findTask(row.dataset.taskTime);
+        if (t) updateTimeRow(row, t, new Date());
+      });
+    } else render();
+  }
+
   function card(t) {
     var tone = toneOf(t);
     var el = h('article', { class: 't-' + tone + ' card' + (t.status === 'done' ? ' is-done' : ''), draggable: 'true', 'data-id': t.id });
@@ -208,7 +237,7 @@
     MOVES[t.status].forEach(function (m) {
       acts.appendChild(ibtn(m[1], 'Move to ' + NAMES[m[0]], function () { moveTask(t.id, m[0]); }));
     });
-    acts.appendChild(ibtn('subs', subs.length ? 'Show subtasks' : 'Add subtasks', toggleSubs, isOpen ? 'on' : ''));
+    acts.appendChild(ibtn('subs', t.subtaskMode === 'count' ? 'Update subtask counts' : 'Show or add subtasks', toggleSubs, isOpen ? 'on' : ''));
     acts.appendChild(ibtn('edit', 'Edit', function () { openDialog(t); }));
     var armed = armedId === t.id;
     var del = ibtn('trash', armed ? 'Click again to delete' : 'Delete', function () { armDelete(t.id); }, armed ? 'armed' : '');
@@ -224,42 +253,44 @@
       acts
     ));
 
-    if (subs.length) {
-      var dn = subs.filter(function (s) { return s.status === 'done'; }).length;
-      var ip = subs.filter(function (s) { return s.status === 'progress'; }).length;
-      var fill = h('i');
-      fill.style.width = Math.round(dn / subs.length * 100) + '%';
-      el.appendChild(h('button', {
-        type: 'button', class: 'subtoggle', 'aria-expanded': isOpen ? 'true' : 'false', onclick: toggleSubs
-      },
-        h('span', { class: 'caret', text: isOpen ? '▾' : '▸' }),
-        h('span', { class: 'bar' }, fill),
-        h('span', { class: 'n', text: dn + '/' + subs.length + (ip ? ' · ' + ip + ' active' : '') })
-      ));
-    }
+    var progress = taskProgress(t);
+    el.appendChild(progressRow('Completion', (progress.percent === 100 ? '✓ ' : '') +
+      progress.completed + '/' + progress.total + ' · ' + formatPercent(progress.percent) + '%', progress.percent, 'completion'));
+    var timeRow = progressRow('Time left', '', 0, 'time-left');
+    timeRow.dataset.taskTime = t.id;
+    updateTimeRow(timeRow, t, new Date());
+    el.appendChild(timeRow);
+    el.appendChild(h('button', {
+      type: 'button', class: 'subtoggle', 'aria-expanded': String(isOpen), onclick: toggleSubs,
+      text: (isOpen ? '▾ ' : '▸ ') + (t.subtaskMode === 'count' ? 'Update subtask counts' : 'Subtasks (' + subs.length + ')')
+    }));
     if (isOpen) {
       var box = h('div', { class: 'subs' });
-      subs.forEach(function (s) {
-        var seg = h('div', { class: 'seg', role: 'group', 'aria-label': 'Subtask status' });
-        [['pending', 'Pending'], ['progress', 'Doing'], ['done', 'Done']].forEach(function (o) {
-          seg.appendChild(h('button', {
-            type: 'button', class: 'segbtn sp-' + o[0], text: o[1],
-            'aria-pressed': s.status === o[0] ? 'true' : 'false',
-            onclick: function () { setSubStatus(t.id, s.id, o[0]); }
-          }));
+      if (t.subtaskMode === 'count') {
+        box.appendChild(h('button', { type: 'button', class: 'sbtn', text: 'Edit completed / total', onclick: function () { openDialog(t); fCompleted.focus(); } }));
+      } else {
+        subs.forEach(function (s) {
+          var seg = h('div', { class: 'seg', role: 'group', 'aria-label': 'Subtask status' });
+          [['pending', 'Pending'], ['progress', 'Doing'], ['done', 'Done']].forEach(function (o) {
+            seg.appendChild(h('button', {
+              type: 'button', class: 'segbtn sp-' + o[0], text: o[1],
+              'aria-pressed': s.status === o[0] ? 'true' : 'false',
+              onclick: function () { setSubStatus(t.id, s.id, o[0]); }
+            }));
+          });
+          box.appendChild(h('div', { class: 'sub' + (s.status === 'done' ? ' is-done' : '') },
+            h('span', { class: 'sub-title', text: s.title }),
+            seg,
+            h('button', { type: 'button', class: 'x', 'aria-label': 'Remove subtask', title: 'Remove subtask', text: '×', onclick: function () { removeSub(t.id, s.id); } })
+          ));
         });
-        box.appendChild(h('div', { class: 'sub' + (s.status === 'done' ? ' is-done' : '') },
-          h('span', { class: 'sub-title', text: s.title }),
-          seg,
-          h('button', { type: 'button', class: 'x', 'aria-label': 'Remove subtask', title: 'Remove subtask', text: '×', onclick: function () { removeSub(t.id, s.id); } })
-        ));
-      });
-      var inp = h('input', { type: 'text', id: 'sa-' + t.id, placeholder: 'Add a subtask', maxlength: '120', autocomplete: 'off' });
-      var submitSub = function () { var v = inp.value.trim(); if (v) addSub(t.id, v); };
-      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); submitSub(); } });
-      box.appendChild(h('div', { class: 'subadd' }, inp, h('button', { type: 'button', class: 'sbtn', text: 'Add', onclick: submitSub })));
+        var inp = h('input', { type: 'text', id: 'sa-' + t.id, placeholder: 'Add a subtask', maxlength: '120', autocomplete: 'off' });
+        var submitSub = function () { var v = inp.value.trim(); if (v) addSub(t.id, v); };
+        inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); submitSub(); } });
+        box.appendChild(h('div', { class: 'subadd' }, inp, h('button', { type: 'button', class: 'sbtn', text: 'Add', onclick: submitSub })));
+        if (!subs.length) setTimeout(function () { if (inp.isConnected && document.activeElement === document.body) inp.focus(); }, 0);
+      }
       el.appendChild(box);
-      if (!subs.length) setTimeout(function () { if (inp.isConnected && document.activeElement === document.body) inp.focus(); }, 0);
     }
     return el;
   }
@@ -570,7 +601,16 @@
   // Add and edit dialog
   var overlay = $('#overlay'), form = $('#task-form'), fTitle = $('#f-title'), fDate = $('#f-date'), fTime = $('#f-time'),
       fStatus = $('#f-status'), fSubs = $('#f-subs'), subsWrap = $('#f-subs-wrap'), msg = $('#form-msg'),
-      btn = $('#f-submit'), dlgTitle = $('#dlg-title');
+      btn = $('#f-submit'), dlgTitle = $('#dlg-title'), fMode = $('#f-subtask-mode'),
+      fTotal = $('#f-subtask-total'), fCompleted = $('#f-subtask-completed');
+
+  function updateSubtaskFields() {
+    var counted = fMode.value === 'count';
+    $('#f-counts-wrap').hidden = !counted;
+    subsWrap.hidden = counted || !!editingId;
+    $('#f-subs-hint').hidden = !editingId;
+  }
+  fMode.addEventListener('change', updateSubtaskFields);
 
   function openDialog(t) {
     opener = document.activeElement;
@@ -579,13 +619,16 @@
     if (t) {
       editingId = t.id;
       fTitle.value = t.title; fDate.value = t.date; fTime.value = t.time || ''; fStatus.value = t.status;
-      subsWrap.hidden = true;
+      fMode.value = t.subtaskMode || 'list';
+      fTotal.value = t.subtaskTotal || 1;
+      fCompleted.value = t.subtaskCompleted || 0;
       btn.textContent = 'Save changes'; dlgTitle.textContent = 'Edit task';
     } else {
       editingId = null;
-      subsWrap.hidden = false;
+      fMode.value = 'count';
       btn.textContent = 'Add task'; dlgTitle.textContent = 'Add a task';
     }
+    updateSubtaskFields();
     overlay.hidden = false;
     fTitle.focus();
   }
@@ -601,20 +644,36 @@
     var title = fTitle.value.trim();
     if (!title) return fail('Give the task a name.', fTitle);
     if (!fDate.value) return fail('Pick a deadline date. Every task needs one.', fDate);
-    if (editingId) {
-      var src = findTask(editingId);
-      if (src) {
-        var t = clone(src);
-        t.title = title; t.date = fDate.value; t.time = fTime.value; t.status = fStatus.value; t.sample = false;
-        if (t.status === 'done') t.subs.forEach(function (s) { s.status = 'done'; });
-        commit(t);
-      }
-    } else {
-      var isDone = fStatus.value === 'done';
-      var subs = fSubs.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean).slice(0, 30)
-        .map(function (s) { return { id: uid(), title: s.slice(0, 120), status: isDone ? 'done' : 'pending' }; });
-      commit({ id: uid(), title: title, date: fDate.value, time: fTime.value, status: fStatus.value, sample: false, created: Date.now(), subs: subs });
+    var total = Number(fTotal.value), completed = Number(fCompleted.value);
+    if (fMode.value === 'count') {
+      if (!fTotal.value || !Number.isSafeInteger(total) || total < 1) return fail('Total subtasks must be a whole number of at least 1.', fTotal);
+      if (!fCompleted.value || !Number.isSafeInteger(completed) || completed < 0 || completed > total) return fail('Completed subtasks must be a whole number from 0 to the total.', fCompleted);
     }
+    var src = editingId ? findTask(editingId) : null;
+    if (editingId && !src) return fail('This task no longer exists. Close this dialog and try again.', fTitle);
+    var t = src ? clone(src) : { id: uid(), created: Date.now(), subs: [] };
+    t.title = title; t.date = fDate.value; t.time = fTime.value; t.sample = false;
+    var modeChanged = (t.subtaskMode || 'list') !== fMode.value;
+    t.subtaskMode = fMode.value;
+    if (!src) {
+      t.subs = fSubs.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean)
+        .map(function (s) { return { id: uid(), title: s.slice(0, 120), status: 'pending' }; });
+    }
+    if (t.subtaskMode === 'count') {
+      t.subtaskTotal = total; t.subtaskCompleted = completed;
+    }
+    // An explicit column change takes priority; otherwise counts drive completion.
+    if ((!src && fStatus.value === 'done') || (src && fStatus.value !== src.status)) {
+      setTaskStatus(t, fStatus.value);
+    } else {
+      t.status = fStatus.value;
+      if (t.subtaskMode === 'count') syncFromCount(t);
+      else if (modeChanged) {
+        if (!t.subs.length && t.status === 'done') t.status = 'pending';
+        syncFromSubs(t);
+      }
+    }
+    commit(t);
     closeDialog();
   });
 
@@ -754,6 +813,6 @@
   }
 
   init();
-  setInterval(render, 60000);
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) render(); });
+  setInterval(refreshBoard, 60000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) refreshBoard(); });
 })();

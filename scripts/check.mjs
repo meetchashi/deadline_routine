@@ -28,3 +28,5 @@ for (const file of readdirSync(root).filter(file => file.endsWith('.js'))) {
   assert.equal(result.status, 0, `Syntax check failed: ${file}`);
 }
 console.log('Passed: JavaScript syntax, manifest, icons, and HTML asset references.');
+
+await import('./progress.test.mjs');
