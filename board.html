@@ -159,6 +159,8 @@
       <label class="field full" for="booking-title"><span>Task or event</span><input id="booking-title" maxlength="140" autocomplete="off" placeholder="What are you planning?"></label>
       <label class="field" for="booking-date"><span>Date</span><input id="booking-date" type="date" required></label>
       <label class="field" for="booking-time"><span>Start time</span><input id="booking-time" type="time" required></label>
+      <label class="field full" for="booking-end"><span>End time</span><input id="booking-end" type="time" required></label>
+      <p class="hint full">An end time at or before the start continues into the next day. You can also set the duration below.</p>
       <label class="field" for="booking-hours"><span>Duration · hours</span><input id="booking-hours" type="number" min="0" max="24" step="1" value="1"></label>
       <label class="field" for="booking-minutes"><span>Minutes</span><input id="booking-minutes" type="number" min="0" max="59" step="1" value="0"></label>
       <p class="hint full" id="booking-preview" aria-live="polite"></p>

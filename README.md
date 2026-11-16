@@ -130,7 +130,7 @@ Use **Daily routine** in the left column to reserve time for a task or event.
 
 1. Click **+ Add** or click an hour in the timeline.
 2. Enter a name, date, and exact **start time**.
-3. Set the duration in **hours** and **minutes**.
+3. Choose an exact **end time**, or set the duration in **hours** and **minutes**. An end time at or before the start means the next day.
 4. Click **Save booking**. The timeline blocks the full duration.
 
 > **Example:** “Work on proposal” starting at **11:25 AM** for **1 hour 15 minutes** reserves **11:25 AM–12:40 PM**.
@@ -146,7 +146,7 @@ Use **Daily routine** in the left column to reserve time for a task or event.
 The schedule refreshes every minute and when you return to the tab. Past hours are hidden for today; an ongoing booking stays visible for its remaining time. Completed bookings still reserve their time.
 
 > [!NOTE]
-> **Board tasks and schedule bookings are separate.** Adding a task to the board does not automatically book time. Schedule bookings do not send reminder notifications.
+> Use the **Add to today** calendar button on a task or named subtask to open a booking with its name and today's date filled in. Saving moves the task to **In progress**; scheduling a subtask also sets that subtask to **Doing**, keeping its siblings' progress. Canceling or an overlapping booking leaves the task unchanged. Adding a task to the board alone does not book time. Schedule bookings do not send reminder notifications.
 
 <a id="track-habits"></a>
 ## 🔥 Track habits with daily practices

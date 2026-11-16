@@ -47,3 +47,16 @@ assert.equal(taskTimeRemaining({ ...task, created: new Date(2026, 10, 16).getTim
 assert.equal(taskTimeRemaining({ ...task, created: undefined }).hasStart, false);
 assert.equal(taskTimeRemaining({ ...task, time: '' }, new Date(2026, 10, 15, 22, 59)).hours, 1);
 console.log('Passed: subtask counts, checklist completion, reopening, and hourly countdown boundaries.');
+
+const scheduled = { status: 'done', subs: [{ id: 'a', status: 'done' }, { id: 'b', status: 'done' }] };
+logic.startScheduledTask(scheduled, 'a');
+assert.equal(scheduled.status, 'progress');
+assert.equal(scheduled.subs[0].status, 'progress');
+assert.equal(scheduled.subs[1].status, 'done');
+for (const status of ['icebox', 'pending', 'progress', 'done']) {
+  const task = { status, subtaskMode: 'count', subtaskTotal: 4, subtaskCompleted: status === 'done' ? 4 : 2 };
+  logic.startScheduledTask(task);
+  assert.equal(task.status, 'progress');
+  assert.equal(task.subtaskCompleted, status === 'done' ? 0 : 2);
+}
+console.log('Passed: scheduling starts tasks and subtasks, reopens completed work, and preserves sibling progress.');

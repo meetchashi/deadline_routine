@@ -91,6 +91,15 @@ function syncFromSubs(t) {
   else if (done > 0 && (t.status === 'icebox' || t.status === 'pending')) t.status = 'progress';
 }
 
+// Scheduling a subtask starts that item while keeping its siblings' progress.
+function startScheduledTask(t, subtaskId) {
+  if (subtaskId) {
+    var sub = (t.subs || []).find(function (s) { return s.id === subtaskId; });
+    if (sub) sub.status = 'progress';
+    t.status = 'progress';
+  } else setTaskStatus(t, 'progress');
+}
+
 // ---- Reminder settings (edit these two numbers, then reload the extension) ----
 var DIGEST_HOUR = 9;      // morning digest of urgent tasks, local time
 var LEAD_MINUTES = 60;    // reminder this many minutes before a timed deadline

@@ -238,6 +238,7 @@
       acts.appendChild(ibtn(m[1], 'Move to ' + NAMES[m[0]], function () { moveTask(t.id, m[0]); }));
     });
     acts.appendChild(ibtn('subs', t.subtaskMode === 'count' ? 'Update subtask counts' : 'Show or add subtasks', toggleSubs, isOpen ? 'on' : ''));
+    acts.appendChild(todayButton(t));
     acts.appendChild(ibtn('edit', 'Edit', function () { openDialog(t); }));
     var armed = armedId === t.id;
     var del = ibtn('trash', armed ? 'Click again to delete' : 'Delete', function () { armDelete(t.id); }, armed ? 'armed' : '');
@@ -281,6 +282,7 @@
           box.appendChild(h('div', { class: 'sub' + (s.status === 'done' ? ' is-done' : '') },
             h('span', { class: 'sub-title', text: s.title }),
             seg,
+            todayButton(t, s),
             h('button', { type: 'button', class: 'x', 'aria-label': 'Remove subtask', title: 'Remove subtask', text: '×', onclick: function () { removeSub(t.id, s.id); } })
           ));
         });
@@ -522,21 +524,35 @@
   }
 
   var bookingsLoaded = false, bookingEditingId = null, bookingOpener = null;
+  var bookingSource = null;
   var bookingOverlay = $('#booking-overlay'), bookingForm = $('#booking-form');
+  function todayButton(t, s) {
+    var button = ibtn('cal', 'Add to today', function () {
+      if (!bookingsLoaded) return;
+      openBooking(null, null, { taskId: t.id, subtaskId: s ? s.id : null });
+      $('#booking-title').value = s ? s.title : t.title;
+      $('#booking-heading').textContent = 'Add to today';
+      $('#booking-time').focus();
+    });
+    button.disabled = !bookingsLoaded;
+    return button;
+  }
   function persistBookings() {
     if (HAS_CHROME) chrome.storage.local.set({ bookings: bookings }).catch(onWriteError);
     else { try { localStorage.setItem(BOOKING_KEY, JSON.stringify(bookings)); } catch (e) { onWriteError(); } }
   }
-  function openBooking(b, time) {
+  function openBooking(b, time, source) {
     bookingOpener = document.activeElement;
     bookingEditingId = b ? b.id : null;
+    bookingSource = source || (b && b.taskId ? { taskId: b.taskId, subtaskId: b.subtaskId || null } : null);
     bookingForm.reset();
     $('#booking-title').value = b ? b.title : '';
-    $('#booking-date').value = b ? b.date : scheduleDate.value;
+    $('#booking-date').value = b ? b.date : source ? ymd(new Date()) : scheduleDate.value;
     var now = new Date();
-    $('#booking-time').value = b ? b.time : time || (scheduleDate.value === ymd(now) ? pad(now.getHours()) + ':' + pad(now.getMinutes()) : '09:00');
+    $('#booking-time').value = b ? b.time : time || ($('#booking-date').value === ymd(now) ? pad(now.getHours()) + ':' + pad(now.getMinutes()) : '09:00');
     $('#booking-hours').value = b ? Math.floor(b.duration / 60) : 1;
     $('#booking-minutes').value = b ? b.duration % 60 : 0;
+    syncBookingEnd();
     $('#booking-done').checked = !!(b && b.done);
     $('#booking-delete').hidden = !b;
     $('#booking-delete').textContent = 'Delete';
@@ -549,22 +565,42 @@
   function closeBooking() {
     bookingOverlay.hidden = true;
     bookingEditingId = null;
+    bookingSource = null;
     if (bookingOpener && bookingOpener.isConnected) bookingOpener.focus();
     else $('#open-booking').focus();
   }
   function bookingValues() {
-    return { id: bookingEditingId || uid(), title: $('#booking-title').value.trim(), date: $('#booking-date').value,
+    var b = { id: bookingEditingId || uid(), title: $('#booking-title').value.trim(), date: $('#booking-date').value,
       time: $('#booking-time').value, duration: Number($('#booking-hours').value) * 60 + Number($('#booking-minutes').value), done: $('#booking-done').checked };
+    if (bookingSource) { b.taskId = bookingSource.taskId; b.subtaskId = bookingSource.subtaskId; }
+    return b;
   }
   function validBookingTime(b) {
     var hours = $('#booking-hours'), minutes = $('#booking-minutes');
-    return b.date && b.time && hours.value !== '' && minutes.value !== '' && hours.validity.valid && minutes.validity.valid && b.duration > 0 && b.duration <= 1440;
+    return b.date && b.time && $('#booking-end').value && hours.value !== '' && minutes.value !== '' && hours.validity.valid && minutes.validity.valid && b.duration > 0 && b.duration <= 1440;
+  }
+  function syncBookingEnd() {
+    var b = bookingValues();
+    $('#booking-end').value = b.date && b.time && b.duration > 0 && b.duration <= 1440
+      ? pad(bookingRange(b).end.getHours()) + ':' + pad(bookingRange(b).end.getMinutes()) : '';
   }
   function updateBookingPreview() {
     var b = bookingValues();
     $('#booking-preview').textContent = validBookingTime(b) ? bookingLabel(b) + ' · ' + b.duration + ' minutes blocked' : 'Choose a start time and a duration of 1 minute to 24 hours.';
   }
-  bookingForm.addEventListener('input', updateBookingPreview);
+  bookingForm.addEventListener('input', function (e) {
+    if (e.target.id === 'booking-end') {
+      var start = $('#booking-time').value, end = $('#booking-end').value;
+      if (start && end) {
+        var a = start.split(':').map(Number), z = end.split(':').map(Number);
+        var duration = z[0] * 60 + z[1] - a[0] * 60 - a[1];
+        if (duration <= 0) duration += 1440;
+        $('#booking-hours').value = Math.floor(duration / 60);
+        $('#booking-minutes').value = duration % 60;
+      }
+    } else if (['booking-time', 'booking-date', 'booking-hours', 'booking-minutes'].indexOf(e.target.id) >= 0) syncBookingEnd();
+    updateBookingPreview();
+  });
   bookingForm.addEventListener('submit', function (e) {
     e.preventDefault();
     var b = bookingValues();
@@ -572,6 +608,12 @@
     if (!validBookingTime(b)) { $('#booking-msg').textContent = 'Choose a date, start time, and duration between 1 minute and 24 hours.'; return; }
     var conflict = bookingConflict(b, bookings);
     if (conflict) { $('#booking-msg').textContent = 'This overlaps with “' + conflict.title + '” (' + bookingLabel(conflict) + '). Choose a free time.'; return; }
+    var linkedTask = b.taskId && findTask(b.taskId);
+    if (linkedTask) {
+      var t = clone(linkedTask);
+      startScheduledTask(t, b.subtaskId);
+      commit(t);
+    }
     var i = bookings.findIndex(function (item) { return item.id === b.id; });
     if (i >= 0) bookings[i] = b; else bookings.push(b);
     scheduleDate.value = b.date;
@@ -786,7 +828,7 @@
       bookings = Array.isArray(arr) ? arr : [];
       bookingsLoaded = true;
       $('#open-booking').disabled = false;
-      renderSchedule(new Date());
+      render();
     }).catch(function () { $('#schedule-summary').textContent = 'Could not load your schedule. Reload to try again.'; });
     readRoutines().then(function (arr) { routines = (arr || []).map(normRoutine); render(); }).catch(function () { /* keep empty */ });
     render();
